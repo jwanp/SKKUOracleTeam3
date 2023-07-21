@@ -96,14 +96,12 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
         return sendChainlinkRequest(req, fee);
     }
     // 4일 간격의 block.timestamp 를 리턴한다. 해당 리턴값은 getDaysEthU은dPrices 의 파라미터로 쓰인다.
-    function get4DaysTimestamps() public view returns (uint256[] memory) { // 거꾸로 저장되어있다.
-        uint256[] memory timestamps;
+    function get4DaysTimestamps() public view returns (uint256[] memory) { 
+        uint256[] memory timestamps = new uint256[](4); // 배열 크기를 4로 정의하고 초기화
         uint256 oneDay = 86400; // Number of seconds in a day
-
-        for (uint256 i = 3; i >= 0 ; i--) {
-            timestamps[i] = block.timestamp - (i) * oneDay;
+        for (uint256 i = 0; i < 4 ; i++) {
+            timestamps[i] = block.timestamp - (3-i) * oneDay;
         }
-
         return timestamps;
     }
     // timestamp 를 날짜로 바꿔준다. 예 1689909960 -> 20230624
