@@ -10,7 +10,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
 
     //variables used for token and host
 
-    ERC20 private ERC20interface;    // ERC20 토큰을 다루기 위한 인터페이스
+    ERC20 private ERCinstance;    // ERC20 토큰을 다루기 위한 인터페이스
     address public tokenAdress; // This is the token address
     address payable public host; // This is the client
     event Transfer(address indexed _from, address indexed _to, uint256 _value); // 토큰을 보냈을때 로그
@@ -42,7 +42,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
     constructor() ConfirmedOwner(msg.sender){
         // change to your token address
         tokenAdress = 0x7EA63fe16FDC8C7c6ac567C0e3cf3E0F859acc5D; // 배포된 tokenAddress 를 입력
-        ERC20interface = ERC20(tokenAdress); // ERC20 인터페이스로 해당 token address 를 감싼다.
+        ERCinstance = ERC20 (tokenAdress); // ERC20 인터페이스로 해당 token address 를 감싼다.
         host = payable(msg.sender);
         //default values
         setChainlinkToken(0x779877A7B0D9E8603169DdbD7836e478b4624789);
@@ -137,20 +137,20 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
     // *************** token functions ****************** //
     
     function contractBalance() public view returns (uint _amount){
-        return ERC20interface.balanceOf(address(this));
+        return ERCinstance.balanceOf(address(this));
     }
     
     function senderBalance() public view returns (uint){
-        return ERC20interface.balanceOf(msg.sender);
+        return ERCinstance.balanceOf(msg.sender);
     }
     
     function approveSpendToken(uint _amount) public returns(bool){
-        return ERC20interface.approve(address(this), _amount); // We give permission to this contract to spend the sender tokens
+        return ERCinstance.approve(address(this), _amount); // We give permission to this contract to spend the sender tokens
         //emit Approval(msg.sender, address(this), _amount);
     }
     
     function allowance() public view returns (uint){
-        return ERC20interface.allowance(msg.sender, address(this));
+        return ERCinstance.allowance(msg.sender, address(this));
     }
     
     
@@ -158,14 +158,14 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
         address from = msg.sender;
         address to = address(this);
 
-        ERC20interface.transferFrom(from, to, _amount);
+        ERCinstance.transferFrom(from, to, _amount);
     }
     
 
     function transferBack (address payable _to, uint256 amount) private {
-        uint balance = ERC20interface.balanceOf(address(this)); // the balance of this smart contract
+        uint balance = ERCinstance.balanceOf(address(this)); // the balance of this smart contract
         require(balance >= amount,"The contract does not have enough tokens.");
-        ERC20interface.transferFrom(address(this), _to, amount);
+        ERCinstance.transferFrom(address(this), _to, amount);
     }
 
     // ************ game functions *************** //
