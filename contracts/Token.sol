@@ -38,14 +38,4 @@ contract Token is ERC20, Ownable {
         _burn(msg.sender, amount  * 10 ** uint(decimals()));
     }
 
-
-    // Mint function - 컨트랙트 소유자만 호출 가능
-    function mint(address to, uint256 amount) external onlyOwner { // onlyOwner 제한
-        _mint(to, amount);
-    }
-
-    // Burn function - 컨트랙트 소유자만 호출 가능
-    function burn(uint256 amount) external onlyOwner { // onlyOwner 제한
-        _burn(msg.sender, amount);
-    }
 }
