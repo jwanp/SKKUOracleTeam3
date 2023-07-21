@@ -71,7 +71,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
 
     // 오라클 HTTP request 를 보내는 함수
     // _timestamp 를 파라미터로 받은뒤 마지막에 concat 한 url 로 request 로 보낸다.
-    function getDaysEthU은dPrices(uint256 _timestmap) public returns(bytes32 requestId) { 
+    function getDaysEthUsdPrices(uint256 _timestmap) public returns(bytes32 requestId) { 
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
@@ -120,7 +120,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
     // getDaysEthU은dPrices() 의 response 를 받은것을 처리하는 함수;;
     function fulfill(bytes32 _requestId, uint256 _price) public recordChainlinkFulfillment(_requestId) {
         // Parse the requestId to get the day index (0-6) for the price
-        emit RequestVolume(_requestId, _price)로
+        emit RequestVolume(_requestId, _price);
         
         // datetemp[startdate] 으로 startdate 해당하는 가격을 어디까지 불러왔는지 알 수 있다.
         //ethUsdPrices[20230627] 이 [2131511,23155,0,0] 이면 datetemp[20230627] 의 값은 2 
@@ -192,7 +192,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
         require(players[msg.sender].started != true, "the game has already started");
         require(datetemp[getYearMonthDay(block.timestamp)] == 4, "the Eth UsdPrices are not stored"); // ethUsdPrices[startdate] 를 4까지 다 불러온뒤 시작 할 수 있다.
         depositTokens(_betting_amount); // betting_amount 만큼 해당 컨트렉트로 token 전송. Token contract 에서 approve 함수를 실행 안했으면 에러
-        players[msg.sender] = Player(false,0,true,false, _betting_amount,0,0,false); // 플레이어 구조체 초기화
+        players[msg.sender] = Player(false,0,true,false, _betting_amount,0,false); // 플레이어 구조체 초기화
         players[msg.sender].startdate = getYearMonthDay(block.timestamp); // 플레이어의 startdate 를 저장
     }
     // 게임을 진행 시키는 함수. 예측 실패나 마지막 스테이지면 게임 종료로 true 를 반환. 예측 성공으로 계속 진행시 flase 를 반환한다.
