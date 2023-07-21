@@ -71,7 +71,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
 
     // 오라클 HTTP request 를 보내는 함수
     // _timestamp 를 파라미터로 받은뒤 마지막에 concat 한 url 로 request 로 보낸다.
-    function getDaysEthUsdPrices(uint256 _timestmap) public returns(bytes32 requestId) { 
+    function getDaysEthUsdPrices(uint256 _timestamp) public returns(bytes32 requestId) { 
         Chainlink.Request memory req = buildChainlinkRequest(
             jobId,
             address(this),
@@ -79,11 +79,11 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
         );
         req.add(
             "get",
-            string(abi.encodePacked("https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD&ts=", Strings.toString(_timestmap)))
+            string(abi.encodePacked("https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD&ts=", Strings.toString(_timestamp)))
             
         );
         // requst를 보낸 URL 을 확인하는 로그를 찍는다.
-        emit APIurl(string(abi.encodePacked("https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD&ts=", Strings.toString(_timestmap))));
+        emit APIurl(string(abi.encodePacked("https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD&ts=", Strings.toString(_timestamp))));
 
         // Set the path to find the desired data in the API response
         req.add("path", "RAW,ETH,USD,VOLUME24HOUR");
@@ -97,10 +97,10 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
     }
     // 4일 간격의 block.timestamp 를 리턴한다. 해당 리턴값은 getDaysEthU은dPrices 의 파라미터로 쓰인다.
     function get4DaysTimestamps() public view returns (uint256[] memory) { // 거꾸로 저장되어있다.
-        uint256[] memory timestamps = new uint256[](4);
+        uint256[] memory timestamps;
         uint256 oneDay = 86400; // Number of seconds in a day
 
-        for (uint256 i = 0; i < 4; i++) {
+        for (uint256 i = 3; i >= 0 ; i--) {
             timestamps[i] = block.timestamp - (i) * oneDay;
         }
 
