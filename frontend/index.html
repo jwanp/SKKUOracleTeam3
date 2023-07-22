@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, Helvetica, sans-serif;
+      }
+    
+      div {
+        width: 20%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+      }
+    
+      button {
+        width: 100%;
+        margin: 10px 0px 5px 0px;
+      }
+    </style> 
+    <script src="https://cdn.ethers.io/lib/ethers-5.7.2.umd.min.js" type="application/javascript"/>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>LearnWeb3 First dApp</title>
+  </head>
+  <body>
+    <script>
+        
+          // Replace the following two values
+        const PredictEthAddress = "0x1Ea38d43356fc75DEaBfB1eB1Ad5f2e96c375208";
+        const PredictEthAbi = [
+        {
+            "inputs": [],
+            "stateMutability": "nonpayable",
+            "type": "constructor"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": false,
+                    "internalType": "string",
+                    "name": "api",
+                    "type": "string"
+                }
+            ],
+            "name": "APIurl",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "_owner",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "_spender",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Approval",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "ChainlinkCancelled",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "ChainlinkFulfilled",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "id",
+                    "type": "bytes32"
+                }
+            ],
+            "name": "ChainlinkRequested",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferRequested",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                }
+            ],
+            "name": "OwnershipTransferred",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "bytes32",
+                    "name": "requestId",
+                    "type": "bytes32"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "volume",
+                    "type": "uint256"
+                }
+            ],
+            "name": "RequestVolume",
+            "type": "event"
+        },
+        {
+            "anonymous": false,
+            "inputs": [
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "_from",
+                    "type": "address"
+                },
+                {
+                    "indexed": true,
+                    "internalType": "address",
+                    "name": "_to",
+                    "type": "address"
+                },
+                {
+                    "indexed": false,
+                    "internalType": "uint256",
+                    "name": "_value",
+                    "type": "uint256"
+                }
+            ],
+            "name": "Transfer",
+            "type": "event"
+        },
+        {
+            "inputs": [],
+            "name": "acceptOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "allowance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "approveSpendToken",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "contractBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_amount",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "datetemp",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "name": "ethUsdPrices",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "finishGame",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "_requestId",
+                    "type": "bytes32"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "_price",
+                    "type": "uint256"
+                }
+            ],
+            "name": "fulfill",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "get4DaysTimestamps",
+            "outputs": [
+                {
+                    "internalType": "uint256[]",
+                    "name": "",
+                    "type": "uint256[]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_date",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getDateTemp",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_timestamp",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getDaysEthUsdPrices",
+            "outputs": [
+                {
+                    "internalType": "bytes32",
+                    "name": "requestId",
+                    "type": "bytes32"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getPlayerWin",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getStage",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getStartdate",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "getTodaydate",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_date",
+                    "type": "uint256"
+                }
+            ],
+            "name": "getethUsdPrices",
+            "outputs": [
+                {
+                    "internalType": "uint256[4]",
+                    "name": "",
+                    "type": "uint256[4]"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "host",
+            "outputs": [
+                {
+                    "internalType": "address payable",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "linkBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "owner",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "name": "players",
+            "outputs": [
+                {
+                    "internalType": "bool",
+                    "name": "win",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint8",
+                    "name": "stage",
+                    "type": "uint8"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "started",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "finished",
+                    "type": "bool"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "betting_amount",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "uint256",
+                    "name": "startdate",
+                    "type": "uint256"
+                },
+                {
+                    "internalType": "bool",
+                    "name": "withdrawn",
+                    "type": "bool"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "enum PredictGame.BetDirection",
+                    "name": "betDirection",
+                    "type": "uint8"
+                }
+            ],
+            "name": "predict",
+            "outputs": [
+                {
+                    "internalType": "uint8",
+                    "name": "",
+                    "type": "uint8"
+                }
+            ],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "senderBalance",
+            "outputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "",
+                    "type": "uint256"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "uint256",
+                    "name": "_betting_amount",
+                    "type": "uint256"
+                }
+            ],
+            "name": "startGame",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "tokenAdress",
+            "outputs": [
+                {
+                    "internalType": "address",
+                    "name": "",
+                    "type": "address"
+                }
+            ],
+            "stateMutability": "view",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {
+                    "internalType": "address",
+                    "name": "to",
+                    "type": "address"
+                }
+            ],
+            "name": "transferOwnership",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "withdraw",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [],
+            "name": "withdrawLink",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ];
+        const TokenAddress = "0x7caEd854Dac539EE7E28a3E42Cdc68F32665F7A6";
+        const TokenAbi = [
+          {
+              "inputs": [],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+          },
+          {
+              "anonymous": false,
+              "inputs": [
+                  {
+                      "indexed": true,
+                      "internalType": "address",
+                      "name": "owner",
+                      "type": "address"
+                  },
+                  {
+                      "indexed": true,
+                      "internalType": "address",
+                      "name": "spender",
+                      "type": "address"
+                  },
+                  {
+                      "indexed": false,
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "Approval",
+              "type": "event"
+          },
+          {
+              "anonymous": false,
+              "inputs": [
+                  {
+                      "indexed": true,
+                      "internalType": "address",
+                      "name": "previousOwner",
+                      "type": "address"
+                  },
+                  {
+                      "indexed": true,
+                      "internalType": "address",
+                      "name": "newOwner",
+                      "type": "address"
+                  }
+              ],
+              "name": "OwnershipTransferred",
+              "type": "event"
+          },
+          {
+              "anonymous": false,
+              "inputs": [
+                  {
+                      "indexed": true,
+                      "internalType": "address",
+                      "name": "from",
+                      "type": "address"
+                  },
+                  {
+                      "indexed": true,
+                      "internalType": "address",
+                      "name": "to",
+                      "type": "address"
+                  },
+                  {
+                      "indexed": false,
+                      "internalType": "uint256",
+                      "name": "value",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "Transfer",
+              "type": "event"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "owner",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "address",
+                      "name": "spender",
+                      "type": "address"
+                  }
+              ],
+              "name": "allowance",
+              "outputs": [
+                  {
+                      "internalType": "uint256",
+                      "name": "",
+                      "type": "uint256"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "spender",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "approve",
+              "outputs": [
+                  {
+                      "internalType": "bool",
+                      "name": "",
+                      "type": "bool"
+                  }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "account",
+                      "type": "address"
+                  }
+              ],
+              "name": "balanceOf",
+              "outputs": [
+                  {
+                      "internalType": "uint256",
+                      "name": "",
+                      "type": "uint256"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "burn",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "decimals",
+              "outputs": [
+                  {
+                      "internalType": "uint8",
+                      "name": "",
+                      "type": "uint8"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "spender",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "uint256",
+                      "name": "subtractedValue",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "decreaseAllowance",
+              "outputs": [
+                  {
+                      "internalType": "bool",
+                      "name": "",
+                      "type": "bool"
+                  }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "spender",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "uint256",
+                      "name": "addedValue",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "increaseAllowance",
+              "outputs": [
+                  {
+                      "internalType": "bool",
+                      "name": "",
+                      "type": "bool"
+                  }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "to",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "mint",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "name",
+              "outputs": [
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "owner",
+              "outputs": [
+                  {
+                      "internalType": "address",
+                      "name": "",
+                      "type": "address"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "renounceOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "s_maxSupply",
+              "outputs": [
+                  {
+                      "internalType": "uint256",
+                      "name": "",
+                      "type": "uint256"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "symbol",
+              "outputs": [
+                  {
+                      "internalType": "string",
+                      "name": "",
+                      "type": "string"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [],
+              "name": "totalSupply",
+              "outputs": [
+                  {
+                      "internalType": "uint256",
+                      "name": "",
+                      "type": "uint256"
+                  }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "to",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "transfer",
+              "outputs": [
+                  {
+                      "internalType": "bool",
+                      "name": "",
+                      "type": "bool"
+                  }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "from",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "address",
+                      "name": "to",
+                      "type": "address"
+                  },
+                  {
+                      "internalType": "uint256",
+                      "name": "amount",
+                      "type": "uint256"
+                  }
+              ],
+              "name": "transferFrom",
+              "outputs": [
+                  {
+                      "internalType": "bool",
+                      "name": "",
+                      "type": "bool"
+                  }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          },
+          {
+              "inputs": [
+                  {
+                      "internalType": "address",
+                      "name": "newOwner",
+                      "type": "address"
+                  }
+              ],
+              "name": "transferOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+          }
+        ];
+        
+        // Currently these two are undefined, we will use Ethers to assign them values
+        let PredictEthContract = undefined;
+        let TokenContract = undefined;
+        let signer = undefined;
+        
+        const provider = new ethers.providers.Web3Provider(window.ethereum, "sepolia");
+        signer = provider.getSigner();
+        provider.send("eth_requestAccounts", []).then(() => {
+          provider.listAccounts().then((accounts) => {
+            signer = provider.getSigner(accounts[0]);
+            PredictEthContract = new ethers.Contract(
+              PredictEthAddress,
+              PredictEthAbi,
+              signer
+            );
+            TokenContract = new ethers.Contract(
+              TokenAddress,
+              TokenAbi,
+              signer
+            );
+            
+            
+          });
+        });
+        
+        // PredictEthContract
+        // TokenContract
+        
+        
+        async function startGame() {
+            const betting_amount = await document.getElementById("betting_amount").value;
+            const timestamps = await PredictEthContract.get4DaysTimestamps();
+            const todaydate = await PredictEthContract.getTodaydate();
+            await console.log(todaydate);
+            await init();
+          
+            // Define a function to wait for successful request or timeout
+            async function waitForRequest(requestNum) {
+              const maxTimeoutInMinutes = 2;
+              if (await PredictEthContract.getDateTemp(todaydate) >= requestNum){
+                document.getElementById(`request_${requestNum}`).innerText = `request#${requestNum}:success`;
+              }
+              else{
+                await PredictEthContract.getDaysEthUsdPrices(todaydate);
+                const startTime = await new Date().getTime();
+                while (true) {
+                    if (await PredictEthContract.getDateTemp(todaydate) >= requestNum) {
+                      document.getElementById(`request_${requestNum}`).innerText = `request#${requestNum}:success`;
+                      break;
+                    } else if ((new Date().getTime() - startTime) > maxTimeoutInMinutes * 60 * 1000) {
+                      document.getElementById(`request_${requestNum}`).innerText = `request#${requestNum}:timeout`;
+                      break;
+                    }
+                  }
+              }
+              
+              
+            }
+            
+          
+            // Wait for each request sequentially
+            for (let i = 1; i <= 4; i++) {
+              document.getElementById(`request_${i}`).innerText = `request#${i}:sending`;
+              await waitForRequest(i);
+            }
+          
+            await console.log("All requests sent");
+            let temp = await PredictEthContract.allowance();
+            await console.log(temp.toString());
+            if(temp.lt(betting_amount)) {
+                await TokenContract.approve(PredictEthAddress, betting_amount);
+            }
+            await PredictEthContract.startGame(betting_amount);
+            document.getElementById("game_finished").innerText = `game started`;
+            document.getElementById("current_stage").innerText = `Stage:0`;
+            let price = await PredictEthContract.getethUsdPrices(await PredictEthContract.getStartdate())[await PredictEthContract.getStage()].toString();
+            document.getElementById("price").innerText = `Price: ${price.toString()}`;
+            getCurrentToken();
+            getStage();
+          }
+          
+        
+        async function predictUp(){
+          // predict(0) 함수 실행
+          const result = await PredictEthContract.predict(0);
+          // if true 
+          await console.log(result ); 
+          if(result){
+            // if .win == true <div id = "game_finished">game </div> => game finished you win
+            if(PredictEthContract.getPlayerWin()){
+              await console.log(result);
+              await console.log(PredictEthContract.getPlayerWin());
+              document.getElementById("game_finished").innerText = `game finished you win`;
+            }
+            else{ // else<div id = "game_finished">game </div> => game finished you lose
+              document.getElementById("game_finished").innerText = `game finished you lose`;
+            }
+          } // else // <div id = "game_finished">game </div> => game stage getStage() - 1 correct!! 로 바꾼다.
+          else{ // <div id = "price">Price:</div> 바꾼다.
+            const stage = await PredictEthContract.getStage();
+            const price = await PredictEthContract.getethUsdPrices(PredictEthContract.getStartdate())[PredictEthContract.getStage()];
+            document.getElementById("game_finished").innerText = `game stage ${stage} up correct!!`;
+            document.getElementById("price").innerText = `Price: ${await price.toString()}`;
+          }
+          getStage();
+        
+        } // change 
+        
+        async function predictDown(){
+          // predict(1) 함수 실행
+          const result = await PredictEthContract.predict(1);
+          // if true 
+          if(result){
+            // if .win == true <div id = "game_finished">game </div> => game finished you win
+            if(PredictEthContract.getPlayerWin()){
+              document.getElementById("game_finished").innerText = `game finished you win`;
+            }
+            else{ // else<div id = "game_finished">game </div> => game finished you lose
+              document.getElementById("game_finished").innerText = `game finished you lose`;
+            }
+          } // else // <div id = "game_finished">game </div> => game stage getStage() - 1 correct!! 로 바꾼다.
+          else{ // <div id = "price">Price:</div> 바꾼다.
+          let stage = await PredictEthContract.getStage();
+          let startdate = await PredictEthContract.getStartdate()
+          let price = await PredictEthContract.getethUsdPrices(startdate)[stage].toString();
+          document.getElementById("game_finished").innerText = `game stage ${stage} down correct!!`;
+          document.getElementById("price").innerText = `Price: ${price}`;
+          }
+          getStage();
+        }
+        
+        async function finishGame(){
+          // finishGame() 함수 실행
+          await PredictEthContract.finishGame();
+          // if .win == true <div id = "game_finished">game </div> => game finished you win
+          if(await PredictEthContract.getPlayerWin){
+            document.getElementById("game_finished").innerText = `game finished you win`;
+          }
+          else{// else            <div id = "game_finished">game </div> => game finished you lose
+            document.getElementById("game_finished").innerText = `game finished you lose`;
+          }
+          getStage();
+        
+        }
+        async function withDraw(){
+          // withdraw 함수 실행
+          PredictEthContract.withdraw();
+        }
+        async function withDrawLink(){
+          // withdrawLink 함수 실행
+          PredictEthContract.withdrawLink();
+        }
+        
+        async function getStage(){
+          // change <div id = "current_stage">Stage:</div>
+          const stage = await PredictEthContract.getStage();
+          document.getElementById("current_stage").innerText = `Stage:${stage}`;
+        } 
+        
+        
+        async function init(){ // 모든 값 초기화한다.
+        
+          //<div id = "first_request">request#1:</div>
+          //<div id = "second_request">request#2:</div>
+          //<div id = "third_request">request#3:</div>
+          //<div id = "fourth_request">request#4:</div>
+          //// <div id = "price">Price:</div> 바꾼다.
+          document.getElementById("request_1").innerText = `request#1`;
+          document.getElementById("request_2").innerText = `request#2`;
+          document.getElementById("request_3").innerText = `request#3`;
+          document.getElementById("request_4").innerText = `request#4`;
+          document.getElementById("price").innerText = `Price:`;
+        }
+        
+        async function getCurrentToken(){
+          // <p id="current_token">Your current token: senderBalance 바꾼다.</p> 
+          const tokenbalance = await PredictEthContract.senderBalance();
+          document.getElementById("current_token").innerText = `Your current token: ${tokenbalance}`;
+        }
+        async function linkBalance(){
+            const tokenbalance2 = await PredictEthContract.linkBalance()/100000000000000000;
+            
+            document.getElementById("current_link").innerText = `Contract current Link: ${tokenbalance2}`;
+        }
+        async function test(){
+            let hey = await PredictEthContract.getethUsdPrices(await PredictEthContract.getStartdate())[await PredictEthContract.getStage()];
+            console.log(hey.toString());
+        }
+        test();
+        </script>
+    <div>
+    <h1>Predict Next ETH/USD!</h1>
+    <h4 id ="contract_address">Contract Address: 0xC14f1AbCc1c3181d5CD5dA34D70a4624944Fa95E</h4>
+    <h4 id ="token_address">Token Address: 0x7caEd854Dac539EE7E28a3E42Cdc68F32665F7A6</h4>
+    <label for="betting_amount">Betting amount:</label>
+    <input type="number" id="betting_amount" /> 
+    <button onclick="startGame()">Start</button>
+    <div id = "request_1">request#1:</div>
+    <div id = "request_2">request#2:</div>
+    <div id = "request_3">request#3:</div>
+    <div id = "request_4">request#4:</div>
+    <div id = "price">Price:</div>
+    <button onclick="predictUp()">UP</button>
+    <button onclick="predictDown()">DOWN</button>  
+    <div id = "current_stage">Stage:</div>
+    <div id = "game_finished">game </div>
+    <button onclick="finishGame()">Finish Game</button>  
+    <button onclick="withDraw()">Withdraw Token</button>   
+    <button onclick="getCurrentToken()">Current Token</button>   
+    <p id="current_token">Your current token:</p>
+    <button onclick="withDrawLink()">Withdraw Link</button>   
+    <button onclick="linkBalance()">Link Balance</button>   
+    <p id="current_link">Contract current Link:</p>
+    </div>
+
+  </body>
+</html>
+
+
+
