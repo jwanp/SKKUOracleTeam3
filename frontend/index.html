@@ -32,7 +32,7 @@
     <script>
         
           // Replace the following two values
-        const PredictEthAddress = "0x1Ea38d43356fc75DEaBfB1eB1Ad5f2e96c375208";
+        const PredictEthAddress = "0x3a59560A0688fadD1DcAF2868c19DCb4E890B9f3";
         const PredictEthAbi = [
         {
             "inputs": [],
@@ -1022,7 +1022,7 @@
             const betting_amount = await document.getElementById("betting_amount").value;
             const timestamps = await PredictEthContract.get4DaysTimestamps();
             const todaydate = await PredictEthContract.getTodaydate();
-            await console.log(todaydate);
+            await console.log(todaydate.toString());
             await init();
           
             // Define a function to wait for successful request or timeout
@@ -1033,8 +1033,8 @@
               }
               else{
                 await PredictEthContract.getDaysEthUsdPrices(todaydate);
-                const startTime = await new Date().getTime();
-                while (true) {
+                let startTime = await new Date().getTime();
+                while (true) { // request 를 smart contract 가 성공적으로 받아왔으면 break, 2분이 넘으면 break 한다.
                     if (await PredictEthContract.getDateTemp(todaydate) >= requestNum) {
                       document.getElementById(`request_${requestNum}`).innerText = `request#${requestNum}:success`;
                       break;
@@ -1043,12 +1043,8 @@
                       break;
                     }
                   }
-              }
-              
-              
+              } 
             }
-            
-          
             // Wait for each request sequentially
             for (let i = 1; i <= 4; i++) {
               document.getElementById(`request_${i}`).innerText = `request#${i}:sending`;
@@ -1060,27 +1056,41 @@
             await console.log(temp.toString());
             if(temp.lt(betting_amount)) {
                 await TokenContract.approve(PredictEthAddress, betting_amount);
+                document.getElementById("game_finished").innerText = `${betting_amount} allowance approving`;
+            }
+
+            const  startTime = await new Date().getTime();
+            while(true){
+                temp = await PredictEthContract.allowance();
+                if(temp.gte(betting_amount)){
+                    break;
+                }
+                if(new Date().getTime() - startTime > 2 * 60 * 1000){
+                    break;
+                }
+                
             }
             await PredictEthContract.startGame(betting_amount);
             document.getElementById("game_finished").innerText = `game started`;
-            document.getElementById("current_stage").innerText = `Stage:0`;
-            let price = await PredictEthContract.getethUsdPrices(await PredictEthContract.getStartdate())[await PredictEthContract.getStage()].toString();
-            document.getElementById("price").innerText = `Price: ${price.toString()}`;
+            let userStartDate = await PredictEthContract.getStartdate();
+            let stage = await PredictEthContract.getStage();
+            let price = await PredictEthContract.getethUsdPrices(userStartDate)[stage];
+            price = await price.toString();
+            document.getElementById("price").innerText = `Price:${price}`;
             getCurrentToken();
-            getStage();
+            await getStage();
           }
           
         
         async function predictUp(){
           // predict(0) 함수 실행
           const result = await PredictEthContract.predict(0);
-          // if true 
-          await console.log(result ); 
+          // if true
+          await console.log("predict up result:",result);
           if(result){
             // if .win == true <div id = "game_finished">game </div> => game finished you win
             if(PredictEthContract.getPlayerWin()){
-              await console.log(result);
-              await console.log(PredictEthContract.getPlayerWin());
+              await console.log(await PredictEthContract.getPlayerWin());
               document.getElementById("game_finished").innerText = `game finished you win`;
             }
             else{ // else<div id = "game_finished">game </div> => game finished you lose
@@ -1089,7 +1099,8 @@
           } // else // <div id = "game_finished">game </div> => game stage getStage() - 1 correct!! 로 바꾼다.
           else{ // <div id = "price">Price:</div> 바꾼다.
             const stage = await PredictEthContract.getStage();
-            const price = await PredictEthContract.getethUsdPrices(PredictEthContract.getStartdate())[PredictEthContract.getStage()];
+            const startdate = await PredictEthContract.getStartdate()
+            const price = await PredictEthContract.getethUsdPrices(startdate)[stage];
             document.getElementById("game_finished").innerText = `game stage ${stage} up correct!!`;
             document.getElementById("price").innerText = `Price: ${await price.toString()}`;
           }
@@ -1133,10 +1144,13 @@
           getStage();
         
         }
+        // ****************************************************************
+        // error => transferback 이 아니라 transfer 함수를 사용해야한다.
         async function withDraw(){
           // withdraw 함수 실행
           PredictEthContract.withdraw();
         }
+        //****************************************************************
         async function withDrawLink(){
           // withdrawLink 함수 실행
           PredictEthContract.withdrawLink();
@@ -1181,7 +1195,7 @@
         </script>
     <div>
     <h1>Predict Next ETH/USD!</h1>
-    <h4 id ="contract_address">Contract Address: 0xC14f1AbCc1c3181d5CD5dA34D70a4624944Fa95E</h4>
+    <h4 id ="contract_address">Contract Address: 0x3a59560A0688fadD1DcAF2868c19DCb4E890B9f3</h4>
     <h4 id ="token_address">Token Address: 0x7caEd854Dac539EE7E28a3E42Cdc68F32665F7A6</h4>
     <label for="betting_amount">Betting amount:</label>
     <input type="number" id="betting_amount" /> 
@@ -1190,11 +1204,11 @@
     <div id = "request_2">request#2:</div>
     <div id = "request_3">request#3:</div>
     <div id = "request_4">request#4:</div>
-    <div id = "price">Price:</div>
+    <p id = "price">Price:</p>
     <button onclick="predictUp()">UP</button>
     <button onclick="predictDown()">DOWN</button>  
-    <div id = "current_stage">Stage:</div>
-    <div id = "game_finished">game </div>
+    <p id = "current_stage">Stage:</p>
+    <p id = "game_finished">game </p>
     <button onclick="finishGame()">Finish Game</button>  
     <button onclick="withDraw()">Withdraw Token</button>   
     <button onclick="getCurrentToken()">Current Token</button>   

@@ -41,7 +41,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
 
     constructor() ConfirmedOwner(msg.sender){
         // change to your token address
-        tokenAdress = 0x7EA63fe16FDC8C7c6ac567C0e3cf3E0F859acc5D; // 배포된 tokenAddress 를 입력
+        tokenAdress = 0x7caEd854Dac539EE7E28a3E42Cdc68F32665F7A6; // 배포된 tokenAddress 를 입력
         ERCinstance = ERC20 (tokenAdress); // ERC20 인터페이스로 해당 token address 를 감싼다.
         host = payable(msg.sender);
         //default values
@@ -163,7 +163,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
     function transferBack (address payable _to, uint256 amount) private {
         uint balance = ERCinstance.balanceOf(address(this)); // the balance of this smart contract
         require(balance >= amount,"The contract does not have enough tokens.");
-        ERCinstance.transferFrom(address(this), _to, amount);
+        ERCinstance.transfer(_to, amount);
     }
 
     // ************ game functions *************** //
@@ -188,7 +188,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
     // 게임을 시작하는 함수,, 해당 함수를 불러오기 전에 ethUsdPrices 를 모두 불러온뒤 실행. Player 구조체를 초기화 한다.
     function startGame(uint256 _betting_amount) public{
         require(players[msg.sender].started != true, "the game has already started");
-        require(datetemp[getYearMonthDay(block.timestamp)] == 4, "the Eth UsdPrices are not stored"); // ethUsdPrices[startdate] 를 4까지 다 불러온뒤 시작 할 수 있다.
+        require(datetemp[getYearMonthDay(block.timestamp)] == 4, "the Eth UsdPrices are notx stored"); // ethUsdPrices[startdate] 를 4까지 다 불러온뒤 시작 할 수 있다.
         depositTokens(_betting_amount); // betting_amount 만큼 해당 컨트렉트로 token 전송. Token contract 에서 approve 함수를 실행 안했으면 에러
         players[msg.sender] = Player(false,0,true,false, _betting_amount,0,false); // 플레이어 구조체 초기화
         players[msg.sender].startdate = getYearMonthDay(block.timestamp); // 플레이어의 startdate 를 저장
@@ -200,16 +200,19 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
         if(players[msg.sender].stage == 3){ // 마지막 스테이지 일 경우 게임을 종료 시킨다. 
             players[msg.sender].finished = true;
             players[msg.sender].win = true;
+            players[msg.sender].started = false;
             return true;
         } // 틀렸을때 게임을 종료 시킨다. ex) ethUsdPrices[20230629][2] >= ethUsdPrices[20230629][3] && up 이면 down && up 이므로 틀렸다.
         else if(ethUsdPrices[players[msg.sender].startdate][players[msg.sender].stage] >= ethUsdPrices[players[msg.sender].startdate][players[msg.sender].stage+1] && (betDirection == BetDirection.Up)){ // down && up
             players[msg.sender].finished = true;  // 예측실패로 게임이 종료된다.
             players[msg.sender].win = false; // 틀렸으므로 win = false 
+            players[msg.sender].started = false;
             return true;
         } // 틀렸을때 게임을 종료 시킨다. ex) ethUsdPrices[20230629][2] <= ethUsdPrices[20230629][3] && down 이면 up && down 이므로 틀렸다.
         else if(ethUsdPrices[players[msg.sender].startdate][players[msg.sender].stage] <= ethUsdPrices[players[msg.sender].startdate][players[msg.sender].stage+1] && (betDirection == BetDirection.Down)){ // up && down
             players[msg.sender].finished = true;// 예측실패로 게임이 종료된다. 
             players[msg.sender].win = false; // 틀렸으므로 win = false 
+            players[msg.sender].started = false;
             return true;
         }
         else{ // 배팅에서 이겼을때
@@ -224,6 +227,7 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
         require(players[msg.sender].started == true, "game hasn't started yet");
         players[msg.sender].finished = true;
         players[msg.sender].win = true;
+        players[msg.sender].started = false;
     }
 
 
@@ -248,6 +252,17 @@ contract PredictGame is ChainlinkClient, ConfirmedOwner {
    // 해당 날짜의 UsdPrices 를 볼 수 있다. ex) getethUsdPrices[20230617] return [14904139806926,14910453234320998,14911425037456,14912637954773]
     function getethUsdPrices(uint256 _date) public view returns(uint256[4] memory ){
         return ethUsdPrices[_date];
+    }
+
+    function getPlayerWin() public view returns(uint8){
+        return  players[msg.sender].win ? 1 : 0;
+    }
+    function linkBalance() public view returns(uint256){
+        LinkTokenInterface link = LinkTokenInterface(chainlinkTokenAddress());
+        return link.balanceOf(address(this));
+    }
+    function getDateTemp(uint256 _date) public view returns(uint8){
+        return datetemp[_date];
     }
 
     
